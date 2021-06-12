@@ -196,6 +196,7 @@ opts = {"1", "2", "3", "4"}
 for option in inputs:
 	if option == "1":
 		print(new_text)
+		input()
 	elif option == "2":
 		if arged:
 			filename = input("Name of new file?")
