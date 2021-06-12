@@ -1,12 +1,5 @@
 import sys, os, ctypes
 
-thisdir = os.path.dirname(sys.argv[0])
-arged = [not len(sys.argv) < i for i in range(2, 5)]
-mode = (False if sys.argv[1] == "-" else True) if arged[0] else (False if input("Add or remove prefix (+/-)\n") == "-" else True)
-pre = (sys.argv[2] if sys.argv[2][-1] == "_" else sys.argv[2] + "_") if arged[1] else input(("Module prefix (try to keep under 3 letters)" if mode else "Prefix to remove")+" don't include underscore\n") + "_"
-arg = " ".join(sys.argv[3:]) if arged[2] else input("Path or name of cfg file:\n")
-original = ""
-
 # os.path.splitext()[1] == ".cfg"
 # [-4:] == ".cfg"
 
@@ -158,12 +151,16 @@ def quick_alias(text):
 
 
 if __name__ == "__main__":
+	thisdir = os.path.dirname(sys.argv[0])
+	arged = [not len(sys.argv) < i for i in range(2, 5)]
+	mode = (False if sys.argv[1] == "-" else True) if arged[0] else (False if input("Add or remove prefix (+/-)\n") == "-" else True)
+	pre = (sys.argv[2] if sys.argv[2][-1] == "_" else sys.argv[2] + "_") if arged[1] else input(("Module prefix (try to keep under 3 letters)" if mode else "Prefix to remove")+" don't include underscore\n") + "_"
+	arg = " ".join(sys.argv[3:]) if arged[2] else input("Path or name of cfg file:\n")
+	original = ""
+
 	original = checkfile(arg, printing=True)
 	
-	if not original:
-		exit()
-
-	original_file = open(original, "r")
+	original_file = open(original, "r") if original else exit()
 	original_text = original_file.readlines()
 	new_text = "".join(original_text)
 
@@ -185,75 +182,75 @@ if __name__ == "__main__":
 
 			pos = new_text.find(i, pos+1)
 
-ask_text = """Output options:\n(can take multiple inputs separated by spaces)\n0 : Exit\n""" \
-"""1 : Output into console\n2 : Output to separate file\n""" \
-"""3 : Rewrite original file""" + "\n4 : Copy to clipboard (Windows only)\n" if os.name == "nt" else "\n"
+	ask_text = """Output options:\n(can take multiple inputs separated by spaces)\n0 : Exit\n""" \
+	"""1 : Output into console\n2 : Output to separate file\n""" \
+	"""3 : Rewrite original file""" + "\n4 : Copy to clipboard (Windows only)\n" if os.name == "nt" else "\n"
 
-inputs = input(ask_text).split()
-opts = {"1", "2", "3", "4"}
+	inputs = input(ask_text).split()
+	opts = {"1", "2", "3", "4"}
 
-# while False not in [o in opts for o in option]:
-for option in inputs:
-	if option == "1":
-		print(new_text)
-		input()
-	elif option == "2":
-		if arged:
-			filename = input("Name of new file?")
-			while checkfile(filename, True):
-				print("File already exists")
+	# while False not in [o in opts for o in option]:
+	for option in inputs:
+		if option == "1":
+			print(new_text)
+			input()
+		elif option == "2":
+			if arged:
 				filename = input("Name of new file?")
+				while checkfile(filename, True):
+					print("File already exists")
+					filename = input("Name of new file?")
 
-			filename += ".cfg" if filename[:-4] != ".cfg" else ""
-			f = open(filename, "x")
-			f.write(new_text)
-			f.close()
+				filename += ".cfg" if filename[:-4] != ".cfg" else ""
+				f = open(filename, "x")
+				f.write(new_text)
+				f.close()
 
-		else:
-			if sys.version_info.major == 2:
-				from Tkinter.tkFileDialog import asksaveasfile
 			else:
-				from tkinter.filedialog import asksaveasfile
+				if sys.version_info.major == 2:
+					from Tkinter.tkFileDialog import asksaveasfile
+				else:
+					from tkinter.filedialog import asksaveasfile
 
-			f = asksaveasfile(mode="x", defaultextension=".cfg")
+				f = asksaveasfile(mode="x", defaultextension=".cfg")
+				f.write(new_text)
+				f.close()
+		elif option == "3":
+			if args:
+				if input("Are you sure? yes/no") != "yes":
+					print("did not Rewrite")
+					break
+			f = open(original, "w")
 			f.write(new_text)
 			f.close()
-	elif option == "3":
-		if args:
-			if input("Are you sure? yes/no") != "yes":
-				print("did not Rewrite")
-				break
-		f = open(original, "w")
-		f.write(new_text)
-		f.close()
-		print("overwrote")
-	elif option == "4" and os.name == "nt":
+			print("overwrote")
+		elif option == "4" and os.name == "nt":
 
-		GMEM_DDESHARE = 0x2000
-		CF_UNICODETEXT = 13
-		d = ctypes.windll # cdll expects 4 more bytes in user32.OpenClipboard(None)
-		if sys.version_info.major == 2:  # Python 2
-			if not isinstance(new_text, unicode):
-				new_text = new_text.decode('mbcs')
-		else:
-			if not isinstance(new_text, str):
-				new_text = new_text.decode('mbcs')
-		d.user32.OpenClipboard(0)
-		d.user32.EmptyClipboard()
-		hCd = d.kernel32.GlobalAlloc(GMEM_DDESHARE, len(new_text.encode('utf-16-le')) + 2)
-		pchData = d.kernel32.GlobalLock(hCd)
-		ctypes.cdll.msvcrt.wcscpy(ctypes.c_wchar_p(pchData), new_text)
-		d.kernel32.GlobalUnlock(hCd)
-		d.user32.SetClipboardData(CF_UNICODETEXT, hCd)
-		d.user32.CloseClipboard()
+			GMEM_DDESHARE = 0x2000
+			CF_UNICODETEXT = 13
+			d = ctypes.windll # cdll expects 4 more bytes in user32.OpenClipboard(None)
+			if sys.version_info.major == 2:  # Python 2
+				if not isinstance(new_text, unicode):
+					new_text = new_text.decode('mbcs')
+			else:
+				if not isinstance(new_text, str):
+					new_text = new_text.decode('mbcs')
+			d.user32.OpenClipboard(0)
+			d.user32.EmptyClipboard()
+			hCd = d.kernel32.GlobalAlloc(GMEM_DDESHARE, len(new_text.encode('utf-16-le')) + 2)
+			pchData = d.kernel32.GlobalLock(hCd)
+			ctypes.cdll.msvcrt.wcscpy(ctypes.c_wchar_p(pchData), new_text)
+			d.kernel32.GlobalUnlock(hCd)
+			d.user32.SetClipboardData(CF_UNICODETEXT, hCd)
+			d.user32.CloseClipboard()
 
-		print("copied to clipboard")
+			print("copied to clipboard")
 
-	if len(inputs) <= 1:
-		break
+		if len(inputs) <= 1:
+			break
 
-	inputs = input().split()
-	if not option:
-		inputs = input(ask_text).split()
-	
-	original_file.close()
+		inputs = input().split()
+		if not option:
+			inputs = input(ask_text).split()
+		
+		original_file.close()
