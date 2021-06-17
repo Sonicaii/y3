@@ -5,7 +5,7 @@ import sys, os, ctypes
 
 # print(os.path.isfile(arg), os.path.splitext(arg), arg)
 
-def checkfile(file, manual_input=False, printing=False):
+def checkfile(file: str, manual_input=False, printing=False):
 
 	if os.path.isfile(file) and file[-4:] == ".cfg":
 		return file
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
 	ask_text = """Output options:\n(can take multiple inputs separated by spaces)\n0 : Exit\n""" \
 	"""1 : Output into console\n2 : Output to separate file\n""" \
-	"""3 : Rewrite original file""" + "\n4 : Copy to clipboard (Windows only)\n" if os.name == "nt" else "\n"
+	"""3 : Rewrite original file""" + "\n4 : Copy to clipboard (Windows only)\n22: Output to /exportcfg\n" if os.name == "nt" else "\n"
 
 	inputs = input(ask_text).split()
 	opts = {"1", "2", "3", "4"}
@@ -193,19 +193,17 @@ if __name__ == "__main__":
 	for option in inputs:
 		if option == "1":
 			print(new_text)
-			input()
 		elif option == "2":
 			if arged:
-				filename = input("Name of new file?")
-				while checkfile(filename, True):
+				while checkfile(
+					(filename:=input("Name of new file?")), True
+					):
 					print("File already exists")
-					filename = input("Name of new file?")
 
 				filename += ".cfg" if filename[:-4] != ".cfg" else ""
 				f = open(filename, "x")
 				f.write(new_text)
 				f.close()
-
 			else:
 				if sys.version_info.major == 2:
 					from Tkinter.tkFileDialog import asksaveasfile
@@ -215,11 +213,29 @@ if __name__ == "__main__":
 				f = asksaveasfile(mode="x", defaultextension=".cfg")
 				f.write(new_text)
 				f.close()
-		elif option == "3":
-			if args:
-				if input("Are you sure? yes/no") != "yes":
+
+			print(f"New file at {os.getcwd()}\\{filename}")
+
+		elif option == "22":
+			# todo fix subtract mode, fix name of new file
+			loc=f"{os.getcwd()}\\exportcfg\\{pre}{original}"if mode else f"{original[len(original)-original[::-1].find(chr(92)):]}{original[:len(pre)+1+len(original)-original[::-1].find(chr(92))]}"
+			print(loc)
+			try:
+				f=open(loc, "x")
+			except FileExistsError:
+				if arged and input("File already exists, overwrite? yes/no\n") != "yes":
 					print("did not Rewrite")
 					break
+				f=open(loc, "w")
+			f.write(new_text)
+			f.close
+
+			print("new file at:", loc)
+
+		elif option == "3":
+			if arged and input("Are you sure? yes/no\n") != "yes":
+				print("did not Rewrite")
+				break
 			f = open(original, "w")
 			f.write(new_text)
 			f.close()
@@ -254,3 +270,5 @@ if __name__ == "__main__":
 			inputs = input(ask_text).split()
 		
 		original_file.close()
+
+	input()
