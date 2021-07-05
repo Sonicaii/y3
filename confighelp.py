@@ -217,8 +217,10 @@ if __name__ == "__main__":
 			print(f"New file at {os.getcwd()}\\{filename}")
 
 		elif option == "22":
+			print(len(pre))
+			
 			# todo fix subtract mode, fix name of new file
-			loc=f"{os.getcwd()}\\exportcfg\\{pre}{original}"if mode else f"{original[len(original)-original[::-1].find(chr(92)):]}{original[:len(pre)+1+len(original)-original[::-1].find(chr(92))]}"
+			loc=f"{os.getcwd()}\\exportcfg\\{os.path.basename(original)[len(pre):]}"if not mode else os.getcwd()+"\\exportcfg\\"+pre+os.path.basename(original)
 			print(loc)
 			try:
 				f=open(loc, "x")
