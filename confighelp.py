@@ -1,3 +1,4 @@
+""" CS:GO .cfg files utilities """
 import sys, os, ctypes
 
 # os.path.splitext()[1] == ".cfg"
@@ -242,6 +243,7 @@ if __name__ == "__main__":
 			f.write(new_text)
 			f.close()
 			print("overwrote")
+			
 		elif option == "4" and os.name == "nt":
 
 			GMEM_DDESHARE = 0x2000
