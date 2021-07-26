@@ -188,7 +188,7 @@ if __name__ == "__main__":
 	"""3 : Rewrite original file""" + "\n4 : Copy to clipboard (Windows only)\n22: Output to /exportcfg\n" if os.name == "nt" else "\n"
 
 	inputs = input(ask_text).split()
-	opts = {"1", "2", "3", "4"}
+	opts = {"1", "2", "22", "3", "4"}
 
 	# while False not in [o in opts for o in option]:
 	for option in inputs:
